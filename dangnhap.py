@@ -1,9 +1,13 @@
+import os
+from werkzeug.utils import secure_filename
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = 'chuoi-bao-mat-cua-ban'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -92,13 +96,12 @@ def logout():
 # Route để thêm truyện mới
 @app.route('/add-story', methods=['GET', 'POST'])
 @login_required
-import os
-from werkzeug.utils import secure_filename
 
 # Thêm cấu hình này ở phía trên, sau dòng app = Flask(_name_)
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+@app.route('/add-story', methods=['GET', 'POST'])
 @app.route('/add-story', methods=['GET', 'POST'])
 @login_required
 def add_story():
@@ -108,29 +111,27 @@ def add_story():
         summary = request.form.get('summary')
         content = request.form.get('content')
         
-        # --- PHẦN XỬ LÝ FILE ẢNH MỚI ---
+        # Xử lý file ảnh
         file = request.files.get('image_file')
         if file and file.filename != '':
-            # Đảm bảo tên file an toàn và lưu vào thư mục static/uploads
             filename = secure_filename(file.filename)
+            # Tạo thư mục nếu chưa tồn tại
             if not os.path.exists(app.config['UPLOAD_FOLDER']):
                 os.makedirs(app.config['UPLOAD_FOLDER'])
             
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             image_url = f"/static/uploads/{filename}"
         else:
-            image_url = "" # Hoặc link ảnh mặc định
-        # -------------------------------
+            image_url = ""
 
+        # Lưu vào Database
         new_story = Story(title=title, author=author, summary=summary, 
                           content=content, image_url=image_url)
-        
         db.session.add(new_story)
         db.session.commit()
         return redirect(url_for('index'))
         
     return render_template('add_story.html')
-
 # Route để xóa truyện
 @app.route('/delete-story/<int:story_id>')
 @login_required
