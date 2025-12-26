@@ -39,9 +39,9 @@ with app.app_context():
     db.create_all()
     if not Story.query.first():
         sample = Story(
-            title="Hành Trình Học Python",
-            author="Gemini",
-            summary="Câu chuyện về một lập trình viên tập sự xây dựng ứng dụng đầu tiên.",
+            title="Tôi có một con vịt",
+            author="Ha Ha",
+            summary="Câu chuyện về một lập trình viên tập sự đang sắp ngáo với mớ code phải sửa đi sửa lại.",
             content="Ngày xửa ngày xưa, có một lập trình viên bắt đầu học Flask...\nĐây là nội dung chương 1."
         )
         db.session.add(sample)
@@ -92,48 +92,56 @@ def login():
 @app.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('login'))
-# Route để thêm truyện mới
-@app.route('/add-story', methods=['GET', 'POST'])
-@login_required
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-@app.route('/add-story', methods=['GET', 'POST'])
+    return redirect(url_for('login')) 
 @app.route('/add-story', methods=['GET', 'POST'])
 @login_required
 def add_story():
     if request.method == 'POST':
+        # 1. Lấy dữ liệu từ form
         title = request.form.get('title')
         author = request.form.get('author')
         summary = request.form.get('summary')
         content = request.form.get('content')
+        file = request.files.get('image_file').close
+        image_url = ""
         
-        # Xử lý file ảnh
-        file = request.files.get('image_file')
+        # 2. Xử lý lưu file ảnh
         if file and file.filename != '':
             filename = secure_filename(file.filename)
-            # Tạo thư mục nếu chưa tồn tại
+        
+        # Tạo thư mục nếu chưa có
             if not os.path.exists(app.config['UPLOAD_FOLDER']):
                 os.makedirs(app.config['UPLOAD_FOLDER'])
             
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image_url = f"/static/uploads/{filename}"
-        else:
-            image_url = ""
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            
+            # Đường dẫn để hiển thị trên web
+            image_url = f"uploads/{filename}" 
 
-        # Lưu vào Database
-        new_story = Story(title=title, author=author, summary=summary, 
-                          content=content, image_url=image_url)
-        db.session.add(new_story)
-        db.session.commit()
-        return redirect(url_for('index'))
-        
+        # 3. Lưu vào Database (Phải thụt lề vào trong POST)
+        try:
+            new_story = Story(
+                title=title, 
+                author=author, 
+                summary=summary, 
+                content=content, 
+                image_url=image_url
+            )
+            db.session.add(new_story)
+            db.session.commit()
+            flash('Thêm truyện thành công!', 'success')
+            return redirect(url_for('index'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Có lỗi xảy ra: {str(e)}', 'error')
+
     return render_template('add_story.html')
 # Route để xóa truyện
 @app.route('/delete-story/<int:story_id>')
 @login_required
 def delete_story(story_id):
-    # Tìm truyện theo id
+# Tìm truyện theo id
     story_to_delete = Story.query.get_or_404(story_id)
     
     try:
