@@ -96,9 +96,6 @@ def logout():
 # Route để thêm truyện mới
 @app.route('/add-story', methods=['GET', 'POST'])
 @login_required
-
-# Thêm cấu hình này ở phía trên, sau dòng app = Flask(_name_)
-UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/add-story', methods=['GET', 'POST'])
