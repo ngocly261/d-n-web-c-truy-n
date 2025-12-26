@@ -1,38 +1,16 @@
 <!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Đăng nhập hệ thống</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 50px; line-height: 1.6; }
-        .error { color: red; }
-        .success { color: green; }
-        input { margin-bottom: 10px; padding: 8px; width: 250px; }
-        button { padding: 8px 15px; cursor: pointer; background-color: #28a745; color: white; border: none; }
-    </style>
-</head>
+<html>
+<head><title>Đăng nhập</title></head>
 <body>
     <h2>Đăng nhập</h2>
-
     {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        {% for message in messages %}
-          <p class="success">{{ message }}</p>
-        {% endfor %}
-      {% endif %}
+      {% if messages %}{% for msg in messages %}<p style="color:red">{{ msg }}</p>{% endfor %}{% endif %}
     {% endwith %}
-
     <form method="POST">
-        <div>
-            <input type="text" name="username" placeholder="Tên đăng nhập" required>
-        </div>
-        <div>
-            <input type="password" name="password" placeholder="Mật khẩu" required>
-        </div>
+        <input type="text" name="username" placeholder="Tên đăng nhập" required><br>
+        <input type="password" name="password" placeholder="Mật khẩu" required><br>
         <button type="submit">Đăng nhập</button>
     </form>
-
-    <hr>
-    <p>Chưa có tài khoản? <a href="{{ url_for('register') }}">Đăng ký ngay tại đây</a></p>
+    <p>Chưa có tài khoản? <a href="/register">Đăng ký ngay</a></p>
 </body>
 </html>

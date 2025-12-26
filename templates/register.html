@@ -1,20 +1,16 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Đăng ký</title>
-</head>
+<head><title>Đăng ký</title></head>
 <body>
-    <h2>Tạo tài khoản mới</h2>
+    <h2>Đăng ký tài khoản</h2>
     {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <p style="color: red;">{{ messages[0] }}</p>
-      {% endif %}
+      {% if messages %}{% for msg in messages %}<p style="color:red">{{ msg }}</p>{% endfor %}{% endif %}
     {% endwith %}
     <form method="POST">
-        <input type="text" name="username" placeholder="Tên đăng nhập" required><br><br>
-        <input type="password" name="password" placeholder="Mật khẩu" required><br><br>
+        <input type="text" name="username" placeholder="Tên đăng nhập" required><br>
+        <input type="password" name="password" placeholder="Mật khẩu" required><br>
         <button type="submit">Đăng ký</button>
     </form>
-    <p><a href="{{ url_for('login') }}">Quay lại đăng nhập</a></p>
+    <p>Đã có tài khoản? <a href="/login">Đăng nhập</a></p>
 </body>
 </html>
