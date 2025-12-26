@@ -102,7 +102,7 @@ def add_story():
         author = request.form.get('author')
         summary = request.form.get('summary')
         content = request.form.get('content')
-        file = request.files.get('image_file').close
+        file = request.files.get('image_file')
         image_url = ""
         
         # 2. Xử lý lưu file ảnh
