@@ -92,21 +92,43 @@ def logout():
 # Route để thêm truyện mới
 @app.route('/add-story', methods=['GET', 'POST'])
 @login_required
+import os
+from werkzeug.utils import secure_filename
+
+# Thêm cấu hình này ở phía trên, sau dòng app = Flask(_name_)
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/add-story', methods=['GET', 'POST'])
+@login_required
 def add_story():
     if request.method == 'POST':
         title = request.form.get('title')
         author = request.form.get('author')
         summary = request.form.get('summary')
         content = request.form.get('content')
-        image_url = request.form.get('image_url') # Lấy thêm link ảnh bìa
+        
+        # --- PHẦN XỬ LÝ FILE ẢNH MỚI ---
+        file = request.files.get('image_file')
+        if file and file.filename != '':
+            # Đảm bảo tên file an toàn và lưu vào thư mục static/uploads
+            filename = secure_filename(file.filename)
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.makedirs(app.config['UPLOAD_FOLDER'])
+            
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            image_url = f"/static/uploads/{filename}"
+        else:
+            image_url = "" # Hoặc link ảnh mặc định
+        # -------------------------------
 
-        # Đưa image_url vào đây để lưu xuống database
         new_story = Story(title=title, author=author, summary=summary, 
-                          content=content, image_url=image_url) 
-
+                          content=content, image_url=image_url)
+        
         db.session.add(new_story)
         db.session.commit()
         return redirect(url_for('index'))
+        
     return render_template('add_story.html')
 
 # Route để xóa truyện
