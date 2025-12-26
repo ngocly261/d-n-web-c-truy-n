@@ -24,6 +24,7 @@ class Story(db.Model):
     author = db.Column(db.String(100))
     summary = db.Column(db.String(500))
     content = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.String(500)) # Thêm dòng này để lưu link ảnh
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -92,20 +93,36 @@ def logout():
 @app.route('/add-story', methods=['GET', 'POST'])
 @login_required
 def add_story():
-    # Trong thực tế, bạn nên kiểm tra xem user có phải là admin không
     if request.method == 'POST':
         title = request.form.get('title')
         author = request.form.get('author')
         summary = request.form.get('summary')
         content = request.form.get('content')
-        
-        new_story = Story(title=title, author=author, summary=summary, content=content)
+        image_url = request.form.get('image_url') # Lấy thêm link ảnh bìa
+
+        # Đưa image_url vào đây để lưu xuống database
+        new_story = Story(title=title, author=author, summary=summary, 
+                          content=content, image_url=image_url) 
+
         db.session.add(new_story)
         db.session.commit()
-        flash('Đã đăng truyện thành công!', 'success')
         return redirect(url_for('index'))
-        
     return render_template('add_story.html')
 
+# Route để xóa truyện
+@app.route('/delete-story/<int:story_id>')
+@login_required
+def delete_story(story_id):
+    # Tìm truyện theo id
+    story_to_delete = Story.query.get_or_404(story_id)
+    
+    try:
+        db.session.delete(story_to_delete)
+        db.session.commit()
+        flash('Đã xóa truyện thành công!', 'success')
+    except:
+        flash('Có lỗi xảy ra khi xóa truyện!', 'error')
+        
+    return redirect(url_for('index'))
 if __name__ == '__main__':
     app.run(debug=True)
