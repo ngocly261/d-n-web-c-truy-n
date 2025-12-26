@@ -88,6 +88,24 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+# Route để thêm truyện mới
+@app.route('/add-story', methods=['GET', 'POST'])
+@login_required
+def add_story():
+    # Trong thực tế, bạn nên kiểm tra xem user có phải là admin không
+    if request.method == 'POST':
+        title = request.form.get('title')
+        author = request.form.get('author')
+        summary = request.form.get('summary')
+        content = request.form.get('content')
+        
+        new_story = Story(title=title, author=author, summary=summary, content=content)
+        db.session.add(new_story)
+        db.session.commit()
+        flash('Đã đăng truyện thành công!', 'success')
+        return redirect(url_for('index'))
+        
+    return render_template('add_story.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
