@@ -26,39 +26,40 @@ def load_user(user_id):
 def index():
     return f'Chào mừng {current_user.username}! <br><a href="/logout">Đăng xuất</a>'
 
-# 3. Trang Đăng nhập
+# 3. Trang Đăng ký
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Thêm .first() để kiểm tra chính xác
+        user_exists = User.query.filter_by(username=username).first()
+        if user_exists:
+            flash('Tên đăng nhập đã tồn tại!')
+        else:
+            new_user = User(username=username, password=password)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Đăng ký thành công! Mời bạn đăng nhập.')
+            return redirect(url_for('login'))
+            
+    return render_template('register.html')
+
+# 4. Trang Đăng nhập
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
+
+        # Thêm .first() ở đây
         user = User.query.filter_by(username=username).first()
-        
-        # Kiểm tra user và password (đơn giản hóa)
+
         if user and user.password == password:
             login_user(user)
             return redirect(url_for('index'))
         else:
             flash('Sai tên đăng nhập hoặc mật khẩu!')
-            
+
     return render_template('login.html')
-
-# 4. Trang Đăng xuất
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash('Bạn đã đăng xuất thành công!')
-    return redirect(url_for('login'))
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all() # Tạo file database
-        # Tạo một user mẫu nếu chưa có
-        if not User.query.filter_by(username='admin').first():
-            new_user = User(username='admin', password='123')
-            db.session.add(new_user)
-            db.session.commit()
-            
-    app.run(debug=True)
